@@ -5,7 +5,7 @@
 \code{paran} performs Horn's 'parallel analysis' to a principal components analysis, to adjust for sample bias in the retention of components.
 }
 \usage{
-paran(x, iterations=0, centile=0, has=FALSE, hasmean=FALSE, quietly=FALSE, status=TRUE)
+paran(x, iterations=0, centile=0, has=FALSE, hasmean=FALSE, quietly=FALSE, status=TRUE, all=FALSE)
 }
 \arguments{
  \item{x}{a numeric matrix or data frame for principal components analysis}
@@ -15,6 +15,7 @@ paran(x, iterations=0, centile=0, has=FALSE, hasmean=FALSE, quietly=FALSE, statu
  \item{hasmean}{as per \code{has}, except that the data are simulated using the observed mean, rather than the mid-point. (see Remarks below)}
  \item{quietly}{suppresses tabled output of the analysis, and only returns the vector of estimated biases.}
  \item{status}{indicates progress in the computation. Parallel analysis can take some time to complete given a large data set and/or a large number of iterations.}
+ \item{all}{outputs the results of the parallel analysis to the table for all components, not only those with unadjusted eigenvalues greater than 1.}
 }
 \details{
 \code{paran} is an implementation of Horn's (1965) technique for evaluating the components retained in a principle components analysis (PCA). According to Horn, a common interpretation of non-correlated data is that they are perfectly non-colinear, and one would expect therefore to see eigenvalues equal to 1 in a PCA of such data. However, Horn notes that multi-colinearity occurs due to sampling error and least-squares "bias," even in uncorrelated data, and therefore actual PCAs of such data will reveal eigenvalues of components greater than and less than 1. His strategy is to contrast eigenvalues produced through a PCA on a number of random data sets (of uncorrelated variables) with the same number of variables and observations as the experimental or observational dataset to produce eigenvalues for components that are adjusted for the sample error-induced inflation. Values greater than zero are retained in the adjustment given by:

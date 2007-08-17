@@ -1,5 +1,5 @@
 `paran` <-
-function(x, iterations=0, centile=0, has=FALSE, hasmean=FALSE, quietly=FALSE, status=TRUE) {
+function(x, iterations=0, centile=0, has=FALSE, hasmean=FALSE, quietly=FALSE, status=TRUE, all=FALSE) {
 
 # quick validation of centile as an integer value
 	centile <- round(centile)
@@ -171,72 +171,77 @@ function(x, iterations=0, centile=0, has=FALSE, hasmean=FALSE, quietly=FALSE, st
 			}
 		}
 
+	if ( all == TRUE ) {
+		y <- P
+		}
+
 	for (x in 1:y) {
 		adjusted <- Ev[x]-AdjEv[x]
-		if (Ev[x] >= 1) {
-			if ( adjusted >=0 ) {
-				AdjSpace = " "
-				}
-			if ( adjusted <0 ) {
-				AdjSpace = ""
-				}
-			if ( Ev[x] >= 0 ) {
-				EvSpace = " "
-				}
-			if ( Ev[x] < 0 ) {
-				EvSpace = ""
-				}
-			if ( AdjEv[x] >= 0 ) {
-				AdjEvSpace = " "
-				}
+		if ( adjusted >=0 ) {
+			AdjSpace = " "
+			}
+		if ( adjusted <0 ) {
+			AdjSpace = ""
+			}
+		if ( Ev[x] >= 0 ) {
+			EvSpace = " "
+			}
+		if ( Ev[x] < 0 ) {
+			EvSpace = ""
+			}
+		if ( AdjEv[x] >= 0 ) {
+			AdjEvSpace = " "
+			}
 
 # Pad the rear of x in case of single-digits
-			if ( x > 9 ) {
-				xPad = ""
-				}
-			if ( x <= 9 ) {
-				xPad = " "
-				}
+		if ( x > 9 ) {
+			xPad = ""
+			}
+		if ( x <= 9 ) {
+			xPad = " "
+			}
 
-# Pad the rear of adjusted in case of right-truncated zeros
-			AdjPad = ""
-			if ( (adjusted * 10^5) %% 100000 == 0 ) {
-				AdjPad = "     "
-				}
-			if ( (adjusted * 10^5) %% 10000 == 0 ) {
-				AdjPad = "    "
-				}
-			if ( (adjusted * 10^5) %% 1000 == 0 ) {
-				AdjPad = "   "
-				}
-			if ( (adjusted * 10^5) %% 100 == 0 ) {
-				AdjPad = "  "
-				}
-			if ( (adjusted * 10^5) %% 10 == 0 ) {
-				AdjPad = " "
-				}
+# Pad the front of adjusted in case of eigenvalues > 10, 100, etc.
+		AdjFPad = "   "
+     if ( round(adjusted) >= 10 ) {
+			AdjFPad = "  "
+			}
+		if ( round(adjusted) >= 100 ) {
+			AdjFPad <- " "
+			}
 
-# Pad the rear of Ev in case of right-truncated zeros
-			EvPad = ""
-			if ( (Ev[x] * 10^5) %% 100000 == 0 ) {
-				EvPad = "     "
-				}
-			if ( (Ev[x] * 10^5) %% 10000 == 0 ) {
-				EvPad = "    "
-				}
-			if ( (Ev[x] * 10^5) %% 1000 == 0 ) {
-				EvPad = "   "
-				}
-			if ( (Ev[x] * 10^5) %% 100 == 0 ) {
-				EvPad = "  "
-				}
-			if ( (Ev[x] * 10^5) %% 10 == 0 ) {
-				EvPad = " "
-				}
+# Set the strtrim number SN
+		SN <- 8
+		if ( abs(adjusted) >= 10 ) {
+			SN <- 9
+			}
+		if ( abs(adjusted) >= 100 ) {
+			SN >= 10
+			}
+		if ( adjusted < 0 ) {
+			SN <- SN + 1
+			}
 
-			if (quietly == FALSE) {
-				cat(x,xPad,"         ",AdjSpace,round(adjusted,digits=6),AdjPad,"   ",EvSpace,round(Ev[x],digits=6),EvPad,"     ",AdjEvSpace,round(AdjEv[x],digits=6),"\n", sep="")
-				}
+# Pad the front of Ev in case of eigenvalues > 10, 100, etc.
+		EvFPad = "   "
+		if ( round(Ev[x]) >= 10 ) {
+			EvFPad = "  "
+			}
+		if ( round(Ev[x]) >= 100 ) {
+			EvFPad = " "
+			}
+
+# Set the strtrim number SN
+		EvSN <- 8
+		if ( Ev[x] >= 10 ) {
+			EvSN <- 9
+			}
+		if ( Ev[x] >= 100 ) {
+			EvSN >= 10
+			}
+
+		if (quietly == FALSE) {
+			cat(x,xPad,"      ",AdjFPad,AdjSpace,strtrim(adjusted,SN),EvFPad,EvSpace,strtrim(Ev[x],EvSN),"     ",AdjEvSpace,round(AdjEv[x],digits=6),"\n", sep="")
 			}
 		}
 	if (quietly == FALSE) {
