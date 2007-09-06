@@ -1,5 +1,5 @@
 `paran` <-
-function(x, iterations=0, centile=0, has=FALSE, hasmean=FALSE, quietly=FALSE, status=TRUE, all=FALSE) {
+function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 
 # quick validation of centile as an integer value
 	centile <- round(centile)
@@ -57,41 +57,7 @@ function(x, iterations=0, centile=0, has=FALSE, hasmean=FALSE, quietly=FALSE, st
 			
 # Create the random dataset.
 		# for normally distributed simulations
-     if (has == FALSE & hasmean == FALSE) {
-			Sim <- matrix(rnorm(N*P),N,P)
-			}
-
-		# as per Hayton, Allen and Scarpello
-     if (has == TRUE & hasmean == FALSE) {
-     	for (var in 1:P) {
-     		MIN <- min(x[[var]])
-     		MAX <- max(x[[var]])
-     		MIDPOINT <- (MAX-MIN)/2
-     		VAR <- var(x[[var]])
-     		Sim[,var] <- rnorm(N,MIDPOINT,VAR)
-     		passcount <- length(Sim[,var][Sim[,var] > MAX | Sim[,var] < MIN])
-     		}
-			while (passcount > 0) {
-				Sim[,var][Sim[,var] > MAX | Sim[,var] < MIN] <- rnorm(passcount,MIDPOINT,VAR)
-     		passcount <- length(Sim[,var][Sim[,var] > MAX | Sim[,var] < MIN])
-     		}
-			}
-
-		# as per Hayton, Allen and Scarpello, but using the mean, not midpoint
-     if (hasmean == TRUE) {
-     	for (var in 1:P) {
-     		MIN <- min(x[[var]])
-     		MAX <- max(x[[var]])
-     		MEAN <- mean(x[[var]])
-     		VAR <- var(x[[var]])
-     		Sim[,var] <- rnorm(N,MEAN,VAR)
-     		passcount <- length(Sim[,var][Sim[,var] > MAX | Sim[,var] < MIN])
-     		}
-			while (passcount > 0) {
-				Sim[,var][Sim[,var] > MAX | Sim[,var] < MIN] <- rnorm(passcount,MEAN,VAR)
-     		passcount <- length(Sim[,var][Sim[,var] > MAX | Sim[,var] < MIN])
-     		}
-			}
+		Sim <- matrix(rnorm(N*P),N,P)
 
 # Run a principal components on the random dataset (which is 
 # the same size and dimension as the user dataset.)
