@@ -1,4 +1,4 @@
-\name{paran}
+	\name{paran}
 \alias{paran}
 \title{Horn's Parallel Analysis of Principal Components}
 \description{
@@ -9,7 +9,7 @@ paran(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE)
 }
 \arguments{
  \item{x}{a numeric matrix or data frame for principal components analysis}
- \item{iterations}{a whole number representing the number of random data sets to be produced in the analysis. The default, indicated by zero, is 30*P, where P is the number of variables or columns in \code{x}.}
+ \item{iterations}{a whole number representing the number of random data sets to be produced in the analysis. The default, indicated by zero, is 30\enc{*}P, where P is the number of variables or columns in \code{x}.}
  \item{centile}{a whole number between 1 and 99 indicating the centile used in estimating bias. The default is to use the mean. By selecting a conservative number, such as 95 or 99, and a large number of iterations, paran can be used to perform the modified version of parallel analysis suggested by Glorfeld (1995).}
  \item{quietly}{suppresses tabled output of the analysis, and only returns the vector of estimated biases.}
  \item{status}{indicates progress in the computation. Parallel analysis can take some time to complete given a large data set and/or a large number of iterations.}
@@ -29,13 +29,13 @@ Hayton, et al. urge a parameterization of the random data to approximate the dis
 a vector of estimated sample biases in the eigenvalues of a data set analyzed by PCA.
 }
 \references{
-Horn JL. 1965. "A rationale and a test for the number of factors in factor analysis." \emph{Psychometrika}. 30: 179-185
+Horn J. L. 1965. "A rationale and a test for the number of factors in factor analysis." \emph{Psychometrika}. 30: 179--185
 
-Zwick WR, Velicer WF. 1986. "Comparison of Five Rules for Determining the Number of Components to Retain." \emph{Psychological Bulletin}. 99: 432-442
+Zwick W. R., Velicer WF. 1986. "Comparison of Five Rules for Determining the Number of Components to Retain." \emph{Psychological Bulletin}. 99: 432--442
 
-Glorfeld, LW. 1995. "An Improvement on Horn's Parallel Analysis Methodology for Selecting the Correct Number of Factors to Retain. \emph{Educational and Psychological Measurement}. 55(3): 377-393
+Glorfeld, L. W. 1995. "An Improvement on Horn's Parallel Analysis Methodology for Selecting the Correct Number of Factors to Retain. \emph{Educational and Psychological Measurement}. 55(3): 377--393
 
-Hayton JC, Allen DG, and Scarpello V. 2004. "Factor Retention Decisions in Exploratory Factor Analysis: A Tutorial on Parallel Analysis" \emph{Organizational Research Methods}. 7(2): 191-205
+Hayton J. C., Allen D. G., and Scarpello V. 2004. "Factor Retention Decisions in Exploratory Factor Analysis: A Tutorial on Parallel Analysis" \emph{Organizational Research Methods}. 7(2): 191--205
 
 Dinno A. 2007 "Exploring the Sensitivity of Horn’s Parallel Analysis to the Distributional Form of Simulated Data" Unpublished manuscript available upon request.
 }
@@ -49,7 +49,7 @@ Alexis Dinno (adinno at post dot harvard dot edu)
 ## perform a standard parallel analysis on the US Arrest data
 paran(USArrests, iterations=5000)
 
-## perform a conservative parallel analysis on the US Arrest data note the different result!
+## a conservative analysis with different result!
 paran(USArrests, iterations=5000, centile=95)
 }
 \keyword{multivariate}
