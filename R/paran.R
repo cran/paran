@@ -1,5 +1,5 @@
 `paran` <-
-function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
+function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa=FALSE, factors=1, rotation="none") {
 
 # quick validation of centile as an integer value
 	centile <- round(centile)
@@ -7,13 +7,28 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 		stop("\nYou must specify a centile value between 1 and 99.\n(Specifying centile 0 will use the mean.)")
 		}
 
+	P <- length(x)
+
 # Perform pca.
-
-	pca <- princomp(x, cor = TRUE)
-
+	if (mlfa == FALSE) {
+		eigenvalues <- princomp(x, cor = TRUE)[[1]]^2
+		}
+	if (mlfa == TRUE) {
+		if (factors > ceiling(length(x)/2)) {
+			cat("\nadjusting number of factors to ",ceiling(length(x)/2),".\n",sep="")
+			factors <- ceiling(length(x)/2)
+			}
+		eigenvalues <- rep(1,factors)
+		loadings <- factanal(x, factors=factors, rotation=rotation)[[2]]
+		for (p in 1:factors) {
+			start <- ((p-1)*P)+1
+			end <- p*P
+			eigenvalues[p] <- sum(loadings[start:end]^2)
+			}
+		}
+	
 # Get the eigenvalues .  .  .
-	Ev = pca[[1]]^2
-	P <- length(Ev)
+	Ev = eigenvalues
 
 # clean up iteration and determine value
    if (iterations<1) {
@@ -25,30 +40,30 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 
 # prepare to save the results of each pca
 		N <- length(as.matrix(x[1]))
-		SimEvs <- matrix(NA,iterations,P)
+		if ( mlfa == FALSE ) {
+			SimEvs <- matrix(NA,iterations,P)
+			}
+		if ( mlfa == TRUE ) {
+			SimEvs <- matrix(NA,iterations,factors)
+			}
 
 # Let the user know the program is working if neccesary
 	if (status==TRUE) {
 		if (iterations >= 10) {
-			cat("\nComputing")
+			cat("\nComputing: ")
 			}
 		}
 
-		for (i in 1:iterations) {
+		for (k in 1:iterations) {
    
 # Yet _more_ letting the user know the program is working!
 			if (status == TRUE) {
-				if (i %% 10 == 1 & iterations >= 10) {
-					disp <- ". "
+				if (k %% (iterations/10) == 1 & iterations >= 10 & k > 1) {
+					pct <- (k%/%(iterations/10))*10
+					cat(pct,"%  ",sep="")
 					}
-				else {
-					disp <- "" 
-					}
-				if (i %% 300 != 1) {
-					cat(disp)
-					}
-				else {
-					cat("\n",disp)
+				if (k == iterations) {
+					cat("100%\n")
 					}
 				}
 
@@ -56,22 +71,33 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 			Sim <- matrix(NA,N,P)
 			
 # Create the random dataset.
-		# for normally distributed simulations
-		Sim <- matrix(rnorm(N*P),N,P)
+			# for normally distributed simulations
+			Sim <- matrix(rnorm(N*P),N,P)
 
-# Run a principal components on the random dataset (which is 
-# the same size and dimension as the user dataset.)
+# Run a principal componentso rfactor analysis on the random dataset
+# (which is the same size and dimension as the user dataset.)
 
-		pca <- princomp(Sim, cor = TRUE)
+			if (mlfa == FALSE) {
+				eigenvalues <- princomp(Sim, cor = TRUE)[[1]]^2
+				}
+			if (mlfa == TRUE) {
+				eigenvalues <- rep(1,factors)
+				loadings <- factanal(Sim, factors=factors, rotation=rotation, start=NULL, nstart=P)[[2]]
+				for (p in 1:factors) {
+					start <- ((p-1)*P)+1
+					end <- p*P
+					eigenvalues[p] <- sum(loadings[start:end]^2)
+					}
+				}
 
 # Get the eigenvalues .  .  .
-		Evs = pca[[1]]^2
+			Evs <- eigenvalues
+
 # Save eigenvalues
-		SimEvs[i,] <- Evs
+			SimEvs[k,] <- Evs
 
-# end the for i loop
+# end the for k loop
 		}
-
 
 # display if neccesary
 	if (quietly == TRUE) {
@@ -79,14 +105,19 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 		}
 	if (quietly == FALSE) {
 	
-		cat("\n\nResults of Horn's Parallel Analysis for principal components\n",sep="")
+		if (mlfa == FALSE) {
+			cat("\n\nResults of Horn's Parallel Analysis for principal components\n",sep="")
+			}
+		if (mlfa == TRUE) {
+			cat("\n\nResults of Horn's Parallel Analysis for ML factor analysis\nwith ",factors," factors specified.\n",sep="")
+			}
 
 		if (iterations == 1) {
 			if (centile == 0) {
 				cat("1 iteration, using the mean estimate","\n",sep="")
 				}
 			if (centile != 0) {
-				cat("1 iteration, using the p",centile," estimate","\n",sep="")
+				cat("1 iteration, using the ",centile," centile estimate","\n",sep="")
 				}
 			}
 
@@ -95,10 +126,10 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 				cat(iterations," iterations, using the mean estimate","\n",sep="")
 				}
 			if (centile != 0 & centile != 50) {
-				cat(iterations," iterations, using the p",centile," estimate","\n",sep="")
+				cat(iterations," iterations, using the ",centile," centile estimate","\n",sep="")
 				}
 			if (centile == 50) {
-				cat(iterations," iterations, using the p",centile," (median) estimate","\n",sep="")
+				cat(iterations," iterations, using the ",centile," centile (median) estimate","\n",sep="")
 				}		
 			}
 
@@ -108,19 +139,23 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 		cat("--------------------------------------------------","\n")
 		}
 
-	AdjEv = c(1:P)*NA 
+	if (mlfa == TRUE) {
+		P <- factors
+		}
+
+	RndEv = c(1:P)*NA 
 
 	if (centile > 0) {
 		for (p in 1:P) {
-			AdjEv[[p]] <- quantile(SimEvs[,p],probs=centile/100)[[1]]
+			RndEv[[p]] <- quantile(SimEvs[,p],probs=centile/100)[[1]]
 			}
 		}
 	if (centile==0) {
 		for (p in 1:P) {
-			AdjEv[[p]] <- mean(SimEvs[,p])			}
+			RndEv[[p]] <- mean(SimEvs[,p])			}
 		}
 
-	if (Ev[[1]] < 1 | AdjEv[[1]] < 1) { 
+	if (Ev[[1]] < 1 | RndEv[[1]] < 1) { 
 		if (quietly == FALSE) {
 			cat("No components passed.","\n")
 			cat("--------------------------------------------------","\n")
@@ -128,10 +163,19 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 			}
 		}
 
+	Bias <- rep(0,P)
+	AdjEv <- rep(1,P)
+	for (p in 1:P) {
+		Bias[p] <- RndEv[p] - 1
+		AdjEv[p] <- Ev[p] - Bias[p]
+		}
+
+	# calculate how many components or factors to return by counting those 
+	# components or factors with adjusted eigenvalues greater than one
 	y <- NA
 	for (x in 1:P) {
 		y <- x
-		if (Ev[x] < 1 | AdjEv[x] < 1) {
+		if (Ev[x] < 1 | RndEv[x] < 1) {
 			y <- x - 1
 			break
 			}
@@ -140,13 +184,12 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 	if ( all == TRUE ) {
 		y <- P
 		}
-
+	
 	for (x in 1:y) {
-		adjusted <- Ev[x]-AdjEv[x]
-		if ( adjusted >=0 ) {
+		if ( AdjEv[x] >=0 ) {
 			AdjSpace = " "
 			}
-		if ( adjusted <0 ) {
+		if ( AdjEv[x] < 0 ) {
 			AdjSpace = ""
 			}
 		if ( Ev[x] >= 0 ) {
@@ -155,8 +198,11 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 		if ( Ev[x] < 0 ) {
 			EvSpace = ""
 			}
-		if ( AdjEv[x] >= 0 ) {
-			AdjEvSpace = " "
+		if ( Bias[x] >= 0 ) {
+			BiasSpace = " "
+			}
+		if ( Bias[x] < 0 ) {
+			BiasSpace = ""
 			}
 
 # Pad the rear of x in case of single-digits
@@ -167,24 +213,24 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 			xPad = " "
 			}
 
-# Pad the front of adjusted in case of eigenvalues > 10, 100, etc.
+# Pad the front of AdjEv in case of eigenvalues > 10, 100, etc.
 		AdjFPad = "   "
-     if ( round(adjusted) >= 10 ) {
+		if ( round(AdjEv[x]) >= 10 ) {
 			AdjFPad = "  "
 			}
-		if ( round(adjusted) >= 100 ) {
+		if ( round(AdjEv[x]) >= 100 ) {
 			AdjFPad <- " "
 			}
 
 # Set the strtrim number SN
 		SN <- 8
-		if ( abs(adjusted) >= 10 ) {
+		if ( abs(AdjEv[x]) >= 10 ) {
 			SN <- 9
 			}
-		if ( abs(adjusted) >= 100 ) {
+		if ( abs(AdjEv[x]) >= 100 ) {
 			SN >= 10
 			}
-		if ( adjusted < 0 ) {
+		if ( AdjEv[x] < 0 ) {
 			SN <- SN + 1
 			}
 
@@ -206,15 +252,24 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE) {
 			EvSN >= 10
 			}
 
+# Set the strtrim number SN
+		BiasSN <- 8
+		if ( Bias[x] >= 10 ) {
+			BiasSN <- 9
+			}
+		if ( Bias[x] >= 100 ) {
+			BiasSN >= 10
+			}
+
 		if (quietly == FALSE) {
-			cat(x,xPad,"      ",AdjFPad,AdjSpace,strtrim(adjusted,SN),EvFPad,EvSpace,strtrim(Ev[x],EvSN),"     ",AdjEvSpace,round(AdjEv[x],digits=6),"\n", sep="")
+			cat(x,xPad,"      ",AdjFPad,AdjSpace,strtrim(AdjEv[x],SN),EvFPad,EvSpace,strtrim(Ev[x],EvSN),"     ",BiasSpace,strtrim(Bias[x],BiasSN),"\n", sep="")
 			}
 		}
 	if (quietly == FALSE) {
 		cat("--------------------------------------------------","\n")
-		cat("Adjusted eigenvalues >= 1 indicate dimensions to retain.\n\n")
+		cat("\nAdjusted eigenvalues > 1 indicate dimensions to retain.\n\n")
 		}
-	
-	return(AdjEv)
+
+	return(Bias)
 }
 
