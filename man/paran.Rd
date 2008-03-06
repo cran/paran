@@ -5,7 +5,7 @@
 \code{paran} performs Horn's 'parallel analysis' to a principal components or factor analysis, so as to adjust for sample bias in the retention of components.
 }
 \usage{
-paran(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa=FALSE, factors=1, rotation="none")
+paran(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa=FALSE, factors=1, rotation="none", graph=FALSE)
 }
 \arguments{
  \item{x}{a numeric matrix or data frame for principal components analysis, or maximum likelihood factor analysis}
@@ -17,6 +17,7 @@ paran(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa=FA
  \item{mlfa}{perform a maximum likelihood factor analysis using \code{\link{factanal}} instead of a principal components analysis.}
  \item{factors}{the number of factors to be fitted. The default is one, and the maximum (due to limitations imposed by the factanal program) is \code{ceiling(P/2)}, where \code{P} is the number of variables in x.}
  \item{rotation}{"none" or the name of the function to be used to rotate the factors when the \code{mlfa} option is used.}
+ \item{graph}{requests that a plot of the unadjusted, adjusted, and random eigenvalues in a format similar to that presented by Horn in his 1965 paper. Unadjusted eigenvalues are drawn in red, adjusted eigenvalues are drawn in black, and random eigenvalues are drawn in blue. Retained components or factors are indicated by the solid circular markers on the adjusted eigenvaue plot, and non-retained components or factors are indicated with hollow circular markers.}
 }
 \details{
 \code{paran} is an implementation of Horn's (1965) technique for evaluating the components or factors retained in a principle components analysis (PCA) or factor analysis (FA). According to Horn, a common interpretation of non-correlated data is that they are perfectly non-colinear, and one would expect therefore to see eigenvalues equal to 1 in a PCA or FA of such data. However, Horn notes that multi-colinearity occurs due to sampling error and least-squares "bias," even in uncorrelated data, and therefore actual PCAs or FSs of such data will reveal eigenvalues of components or factors greater than and less than 1. His strategy is to contrast eigenvalues produced through a PCA or FA on a number of random data sets (of uncorrelated variables) with the same number of variables and observations as the experimental or observational dataset to produce eigenvalues for components or factors that are adjusted for the sample error-induced inflation. Values greater than zero are retained in the adjustment given by:

@@ -1,5 +1,5 @@
 `paran` <-
-function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa=FALSE, factors=1, rotation="none") {
+function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa=FALSE, factors=1, rotation="none", graph=FALSE) {
 
 # quick validation of centile as an integer value
 	centile <- round(centile)
@@ -28,11 +28,11 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 		}
 	
 # Get the eigenvalues .  .  .
-	Ev = eigenvalues
+	Ev <- eigenvalues
 
 # clean up iteration and determine value
    if (iterations<1) {
-		iterations = 30*P
+		iterations <- 30*P
 		}
    if (iterations<0) {
 		cat("\nInvalid number of iterations! Using default value of ",iterations,"\n",sep="")
@@ -74,7 +74,7 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 			# for normally distributed simulations
 			Sim <- matrix(rnorm(N*P),N,P)
 
-# Run a principal componentso rfactor analysis on the random dataset
+# Run a principal components or factor analysis on the random dataset
 # (which is the same size and dimension as the user dataset.)
 
 			if (mlfa == FALSE) {
@@ -167,7 +167,7 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 	AdjEv <- rep(1,P)
 	for (p in 1:P) {
 		Bias[p] <- RndEv[p] - 1
-		AdjEv[p] <- Ev[p] - Bias[p]
+		AdjEv[p] <- Ev[[p]] - Bias[p]
 		}
 
 	# calculate how many components or factors to return by counting those 
@@ -175,8 +175,9 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 	y <- NA
 	for (x in 1:P) {
 		y <- x
-		if (Ev[x] < 1 | RndEv[x] < 1) {
+		if (AdjEv[x] <= 1) {
 			y <- x - 1
+			retained <- y
 			break
 			}
 		}
@@ -184,7 +185,7 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 	if ( all == TRUE ) {
 		y <- P
 		}
-	
+
 	for (x in 1:y) {
 		if ( AdjEv[x] >=0 ) {
 			AdjSpace = " "
@@ -192,10 +193,10 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 		if ( AdjEv[x] < 0 ) {
 			AdjSpace = ""
 			}
-		if ( Ev[x] >= 0 ) {
+		if ( Ev[[x]] >= 0 ) {
 			EvSpace = " "
 			}
-		if ( Ev[x] < 0 ) {
+		if ( Ev[[x]] < 0 ) {
 			EvSpace = ""
 			}
 		if ( Bias[x] >= 0 ) {
@@ -236,20 +237,27 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 
 # Pad the front of Ev in case of eigenvalues > 10, 100, etc.
 		EvFPad = "   "
-		if ( round(Ev[x]) >= 10 ) {
+		if ( round(Ev[[x]]) >= 10 ) {
 			EvFPad = "  "
 			}
-		if ( round(Ev[x]) >= 100 ) {
+		if ( round(Ev[[x]]) >= 100 ) {
 			EvFPad = " "
 			}
 
 # Set the strtrim number SN
 		EvSN <- 8
-		if ( Ev[x] >= 10 ) {
+		if ( Ev[[x]] >= 10 ) {
 			EvSN <- 9
 			}
-		if ( Ev[x] >= 100 ) {
-			EvSN >= 10
+		if ( Ev[[x]] >= 100 ) {
+			EvSN <- 10
+			}
+		if (Ev[[x]] >= .0000005) {
+			EvZPad <- ""
+			}
+		if (Ev[[x]] < .0000005) {
+			Ev[[x]] <- 0
+			EvZPad <- ".000000"
 			}
 
 # Set the strtrim number SN
@@ -262,12 +270,33 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 			}
 
 		if (quietly == FALSE) {
-			cat(x,xPad,"      ",AdjFPad,AdjSpace,strtrim(AdjEv[x],SN),EvFPad,EvSpace,strtrim(Ev[x],EvSN),"     ",BiasSpace,strtrim(Bias[x],BiasSN),"\n", sep="")
+			cat(x,xPad,"      ",AdjFPad,AdjSpace,strtrim(AdjEv[x],SN),EvFPad,EvSpace,strtrim(Ev[[x]],EvSN),EvZPad,"     ",BiasSpace,strtrim(Bias[x],BiasSN),"\n", sep="")
 			}
 		}
 	if (quietly == FALSE) {
 		cat("--------------------------------------------------","\n")
-		cat("\nAdjusted eigenvalues > 1 indicate dimensions to retain.\n\n")
+		if (mlfa==FALSE) {
+			cat("\nAdjusted eigenvalues > 1 indicate dimensions to retain.\n(",retained," components retained)\n\n",sep="")
+			}
+		if (mlfa==TRUE) {
+			cat("\nAdjusted eigenvalues > 1 indicate dimensions to retain.\n(",retained," factors retained)\n\n",sep="")
+			}
+		}
+
+# Graph it if needed
+	if (graph == TRUE) {
+		if (mlfa==FALSE) {
+			par(yaxs='i',xaxs='i')
+			plot.default(c(1:P), AdjEv, type='o', main='Parallel Analysis', xlab='Components', ylab='Eigenvalues', pch=21, bg='white', xlim=c(.5,P+.5), ylim=c(-.5,ceiling(Ev[[1]])))
+			}
+		if (mlfa==TRUE) {
+			par(xaxp=c(1,P,1))
+			plot.default(c(1:P), AdjEv, type='o', main='Parallel Analysis', xlab='Factors', ylab='Eigenvalues', pch=21, bg='white', xlim=c(.5,P+.5), ylim=c(-.5,ceiling(Ev[[1]])))
+			}
+		abline(h=1, col='lightgrey',lwd=.5)
+		points(c(1:P),RndEv, type='o', col='blue', pch=20)
+		points(c(1:P),Ev, type='o', col='red', pch=20)
+		points(c(1:retained), AdjEv[1:retained], type='p', pch=19)
 		}
 
 	return(Bias)
