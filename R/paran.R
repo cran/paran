@@ -1,6 +1,8 @@
 `paran` <-
-function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa=FALSE, factors=1, rotation="none", graph=FALSE) {
+function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa=FALSE, factors=1, rotation="none", graph=FALSE, color=TRUE, col=c("black","red","blue"), lty=c(1,2,3), lwd=1, file="", width=640, height=640) {
 
+	x <- data.frame(x)
+	LowerBound <- .005/iterations
 # quick validation of centile as an integer value
 	centile <- round(centile)
 	if (centile > 99 | centile < 0) {
@@ -30,6 +32,18 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 # Get the eigenvalues .  .  .
 	Ev <- eigenvalues
 
+# note which model
+	model <- "component"
+	models <- "components"
+	Model <- "Component"
+	Models <- "Components"
+	if (mlfa == TRUE) {
+		model <- "factor"
+		models <- "factors   "
+		Model <- "Factor   "
+		Models <- "Factors"
+		}
+
 # clean up iteration and determine value
    if (iterations<1) {
 		iterations <- 30*P
@@ -54,50 +68,56 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 			}
 		}
 
-		for (k in 1:iterations) {
+	set.seed(Sys.time())
+	for (k in 1:iterations) {
    
 # Yet _more_ letting the user know the program is working!
-			if (status == TRUE) {
-				if (k %% (iterations/10) == 1 & iterations >= 10 & k > 1) {
-					pct <- (k%/%(iterations/10))*10
-					cat(pct,"%  ",sep="")
-					}
-				if (k == iterations) {
-					cat("100%\n")
-					}
+		if (status == TRUE) {
+			if (k %% (iterations/10) == 1 & iterations >= 10 & k > 1) {
+				pct <- (k%/%(iterations/10))*10
+				cat(pct,"%  ",sep="")
 				}
+			if (k == iterations) {
+				cat("100%\n")
+				}
+			}
 
 # initialize previously created random dataset.
-			Sim <- matrix(NA,N,P)
+		Sim <- matrix(NA,N,P)
 			
 # Create the random dataset.
-			# for normally distributed simulations
-			Sim <- matrix(rnorm(N*P),N,P)
+		# for normally distributed simulations
+		Sim <- matrix(rnorm(N*P),N,P)
 
 # Run a principal components or factor analysis on the random dataset
 # (which is the same size and dimension as the user dataset.)
 
-			if (mlfa == FALSE) {
-				eigenvalues <- princomp(Sim, cor = TRUE)[[1]]^2
+		if (mlfa == FALSE) {
+			eigenvalues <- princomp(Sim, cor = TRUE)[[1]]^2
+			}
+		if (mlfa == TRUE) {
+			eigenvalues <- rep(1,factors)
+			loadings <- NA
+			while (is.na(loadings) ) {
+				try(loadings <- factanal(as.data.frame(data.frame(Sim, row.names=as.character(1:N))), factors=factors, rotation=rotation, start=matrix(runif(P*factors),P,factors), lower=LowerBound)[[2]], silent=TRUE)
+				set.seed(Sys.time())
 				}
-			if (mlfa == TRUE) {
-				eigenvalues <- rep(1,factors)
-				loadings <- factanal(Sim, factors=factors, rotation=rotation, start=NULL, nstart=P)[[2]]
-				for (p in 1:factors) {
-					start <- ((p-1)*P)+1
-					end <- p*P
-					eigenvalues[p] <- sum(loadings[start:end]^2)
-					}
+			for (p in 1:factors) {
+				start <- ((p-1)*P)+1
+				end <- p*P
+				eigenvalues[p] <- sum(loadings[start:end]^2)
 				}
+			}
 
 # Get the eigenvalues .  .  .
-			Evs <- eigenvalues
+		Evs <- eigenvalues
 
 # Save eigenvalues
-			SimEvs[k,] <- Evs
+		SimEvs[k,] <- Evs
 
-# end the for k loop
-		}
+# reseed and end the for k loop
+	set.seed(Sys.time())
+	}
 
 # display if neccesary
 	if (quietly == TRUE) {
@@ -105,12 +125,7 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 		}
 	if (quietly == FALSE) {
 	
-		if (mlfa == FALSE) {
-			cat("\n\nResults of Horn's Parallel Analysis for principal components\n",sep="")
-			}
-		if (mlfa == TRUE) {
-			cat("\n\nResults of Horn's Parallel Analysis for ML factor analysis\nwith ",factors," factors specified.\n",sep="")
-			}
+		cat("\n\nResults of Horn's Parallel Analysis for ",model," retention\n",sep="")
 
 		if (iterations == 1) {
 			if (centile == 0) {
@@ -134,8 +149,8 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 			}
 
 		cat("\n--------------------------------------------------","\n")
-		cat("Component   Adjusted    Unadjusted    Estimated","\n")
-		cat("or Factor   Eigenvalue  Eigenvalue    Bias","\n")
+		cat(Model,"  Adjusted    Unadjusted    Estimated","\n")
+		cat("            Eigenvalue  Eigenvalue    Bias","\n")
 		cat("--------------------------------------------------","\n")
 		}
 
@@ -275,30 +290,46 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 		}
 	if (quietly == FALSE) {
 		cat("--------------------------------------------------","\n")
-		if (mlfa==FALSE) {
-			cat("\nAdjusted eigenvalues > 1 indicate dimensions to retain.\n(",retained," components retained)\n\n",sep="")
-			}
-		if (mlfa==TRUE) {
-			cat("\nAdjusted eigenvalues > 1 indicate dimensions to retain.\n(",retained," factors retained)\n\n",sep="")
-			}
+		cat("\nAdjusted eigenvalues > 1 indicate dimensions to retain.\n(",retained," ",models," retained)\n\n",sep="")
 		}
 
 # Graph it if needed
 	if (graph == TRUE) {
+		AdjEvCol = col[1]
+		EvCol = col[2]
+		RndEvCol = col[3]
+		AdjEvLty = 1
+		EvLty = 1
+		RndEvLty = 1
+		if (color == FALSE) {
+			EvCol = "black"
+			RndEvCol = "black"
+			EvLty = lty[2]
+			RndEvLty = lty[3]
+			}
 		if (mlfa==FALSE) {
-			par(yaxs='i',xaxs='i')
-			plot.default(c(1:P), AdjEv, type='o', main='Parallel Analysis', xlab='Components', ylab='Eigenvalues', pch=21, bg='white', xlim=c(.5,P+.5), ylim=c(-.5,ceiling(Ev[[1]])))
+			par(yaxs='i', xaxs='i', lab=c(P,ceiling(Ev[1]),2))
+			plot.default(c(1:P), RndEv, type='o', main='Parallel Analysis', xlab='Components', ylab='Eigenvalues', pch=20, col=RndEvCol, lty=RndEvLty, lwd=lwd, xlim=c(.5,P+.5), ylim=c(-.5,ceiling(Ev[[1]])))
 			}
 		if (mlfa==TRUE) {
 			par(xaxp=c(1,P,1))
-			plot.default(c(1:P), AdjEv, type='o', main='Parallel Analysis', xlab='Factors', ylab='Eigenvalues', pch=21, bg='white', xlim=c(.5,P+.5), ylim=c(-.5,ceiling(Ev[[1]])))
+			plot.default(c(1:P), RndEv, type='o', main='Parallel Analysis', xlab='Factors', ylab='Eigenvalues', pch=20, col=RndEvCol, lty=RndEvLty, lwd=lwd, xlim=c(.5,P+.5), ylim=c(-.5,ceiling(Ev[[1]])))
 			}
 		abline(h=1, col='lightgrey',lwd=.5)
-		points(c(1:P),RndEv, type='o', col='blue', pch=20)
-		points(c(1:P),Ev, type='o', col='red', pch=20)
-		points(c(1:retained), AdjEv[1:retained], type='p', pch=19)
+		points(c(1:P),AdjEv, type='o', col=AdjEvCol, lty=AdjEvLty, pch=21, bg='white', lwd=lwd)
+		points(c(1:P),Ev, type='o', col=EvCol, lty=EvLty, pch=20, lwd=lwd)
+		points(c(1:retained), AdjEv[1:retained], type='p', pch=19, col=AdjEvCol, lty=AdjEvLty, lwd=lwd)
+		if (file != "" & typeof(file) == "character") {
+			dev.copy(png, height=height, width=width, file=file)
+			dev.off()
+			}
 		}
 
-	return(Bias)
+	names(retained) <- c(paste("Retained ",Models,sep=""))
+	names(AdjEv) <- c("Adjusted Eigenvalues")
+	names(Ev) <- c("Unadjusted Eigenvalues")
+	names(RndEv) <- c("Random Eigenvalues")
+	names(Bias) <- c("Estimated Bias")
+	return(list(retained,AdjEv,Ev,RndEv,Bias,SimEvs))
 }
 
