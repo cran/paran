@@ -1,8 +1,11 @@
 `paran` <-
-function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa=FALSE, factors=1, rotation="none", graph=FALSE, color=TRUE, col=c("black","red","blue"), lty=c(1,2,3), lwd=1, file="", width=640, height=640) {
+function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, cfa=FALSE, graph=FALSE, color=TRUE, col=c("black","red","blue"), lty=c(1,2,3), lwd=1, file="", width=640, height=640) {
 
+library(MASS)
+
+# x are the data
 	x <- data.frame(x)
-	LowerBound <- .005/iterations
+
 # quick validation of centile as an integer value
 	centile <- round(centile)
 	if (centile > 99 | centile < 0) {
@@ -11,22 +14,14 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 
 	P <- length(x)
 
-# Perform pca.
-	if (mlfa == FALSE) {
-		eigenvalues <- princomp(x, cor = TRUE)[[1]]^2
+# Perform pca or cfa
+	if (cfa == FALSE) {
+		eigenvalues <- eigen(cor(x), only.values = TRUE, EISPACK = FALSE)[[1]]
 		}
-	if (mlfa == TRUE) {
-		if (factors > ceiling(length(x)/2)) {
-			cat("\nadjusting number of factors to ",ceiling(length(x)/2),".\n",sep="")
-			factors <- ceiling(length(x)/2)
-			}
-		eigenvalues <- rep(1,factors)
-		loadings <- factanal(x, factors=factors, rotation=rotation)[[2]]
-		for (p in 1:factors) {
-			start <- ((p-1)*P)+1
-			end <- p*P
-			eigenvalues[p] <- sum(loadings[start:end]^2)
-			}
+	if (cfa == TRUE) {
+		C <- cor(x)
+		C <- C - ginv(diag(diag(ginv(C))))
+		eigenvalues <- eigen(C, only.values = TRUE, EISPACK = FALSE)[[1]]
 		}
 	
 # Get the eigenvalues .  .  .
@@ -37,7 +32,7 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 	models <- "components"
 	Model <- "Component"
 	Models <- "Components"
-	if (mlfa == TRUE) {
+	if (cfa == TRUE) {
 		model <- "factor"
 		models <- "factors   "
 		Model <- "Factor   "
@@ -54,11 +49,11 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 
 # prepare to save the results of each pca
 		N <- length(as.matrix(x[1]))
-		if ( mlfa == FALSE ) {
+		if ( cfa == FALSE ) {
 			SimEvs <- matrix(NA,iterations,P)
 			}
-		if ( mlfa == TRUE ) {
-			SimEvs <- matrix(NA,iterations,factors)
+		if ( cfa == TRUE ) {
+			SimEvs <- matrix(NA,iterations,P)
 			}
 
 # Let the user know the program is working if neccesary
@@ -68,7 +63,7 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 			}
 		}
 
-	set.seed(Sys.time())
+	set.seed(1000*proc.time()[[1]])
 	for (k in 1:iterations) {
    
 # Yet _more_ letting the user know the program is working!
@@ -92,21 +87,13 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 # Run a principal components or factor analysis on the random dataset
 # (which is the same size and dimension as the user dataset.)
 
-		if (mlfa == FALSE) {
-			eigenvalues <- princomp(Sim, cor = TRUE)[[1]]^2
+		if (cfa == FALSE) {
+			eigenvalues <- eigen(cor(Sim), only.values = TRUE, EISPACK = FALSE)[[1]]
 			}
-		if (mlfa == TRUE) {
-			eigenvalues <- rep(1,factors)
-			loadings <- NA
-			while (is.na(loadings) ) {
-				try(loadings <- factanal(as.data.frame(data.frame(Sim, row.names=as.character(1:N))), factors=factors, rotation=rotation, start=matrix(runif(P*factors),P,factors), lower=LowerBound)[[2]], silent=TRUE)
-				set.seed(Sys.time())
-				}
-			for (p in 1:factors) {
-				start <- ((p-1)*P)+1
-				end <- p*P
-				eigenvalues[p] <- sum(loadings[start:end]^2)
-				}
+		if (cfa == TRUE) {
+			C <- cor(Sim)
+			C <- C - ginv(diag(diag(ginv(C))))
+			eigenvalues <- eigen(C, only.values = TRUE, EISPACK = FALSE)[[1]]
 			}
 
 # Get the eigenvalues .  .  .
@@ -116,7 +103,8 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 		SimEvs[k,] <- Evs
 
 # reseed and end the for k loop
-	set.seed(Sys.time())
+	Sys.sleep(.002)
+	set.seed(1000*proc.time()[[1]])
 	}
 
 # display if neccesary
@@ -152,10 +140,6 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 		cat(Model,"  Adjusted    Unadjusted    Estimated","\n")
 		cat("            Eigenvalue  Eigenvalue    Bias","\n")
 		cat("--------------------------------------------------","\n")
-		}
-
-	if (mlfa == TRUE) {
-		P <- factors
 		}
 
 	RndEv = c(1:P)*NA 
@@ -261,16 +245,16 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 
 # Set the strtrim number SN
 		EvSN <- 8
-		if ( Ev[[x]] >= 10 ) {
+		if ( abs(Ev[[x]]) >= 10 ) {
 			EvSN <- 9
 			}
-		if ( Ev[[x]] >= 100 ) {
+		if ( abs(Ev[[x]]) >= 100 ) {
 			EvSN <- 10
 			}
-		if (Ev[[x]] >= .0000005) {
+		if (abs(Ev[[x]]) >= .0000005) {
 			EvZPad <- ""
 			}
-		if (Ev[[x]] < .0000005) {
+		if (abs(Ev[[x]]) < .0000005) {
 			Ev[[x]] <- 0
 			EvZPad <- ".000000"
 			}
@@ -307,11 +291,11 @@ function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, mlfa
 			EvLty = lty[2]
 			RndEvLty = lty[3]
 			}
-		if (mlfa==FALSE) {
+		if (cfa==FALSE) {
 			par(yaxs='i', xaxs='i', lab=c(P,ceiling(Ev[1]),2))
 			plot.default(c(1:P), RndEv, type='o', main='Parallel Analysis', xlab='Components', ylab='Eigenvalues', pch=20, col=RndEvCol, lty=RndEvLty, lwd=lwd, xlim=c(.5,P+.5), ylim=c(-.5,ceiling(Ev[[1]])))
 			}
-		if (mlfa==TRUE) {
+		if (cfa==TRUE) {
 			par(xaxp=c(1,P,1))
 			plot.default(c(1:P), RndEv, type='o', main='Parallel Analysis', xlab='Factors', ylab='Eigenvalues', pch=20, col=RndEvCol, lty=RndEvLty, lwd=lwd, xlim=c(.5,P+.5), ylim=c(-.5,ceiling(Ev[[1]])))
 			}
