@@ -1,6 +1,6 @@
 Package: paran
-Version: 1.3.6
-Date: 2008-4-29
+Version: 1.4.0
+Date: 2008-9-18
 Title: Horn's Test of Principal Components/Factors
 Author: Alexis Dinno <adinno@post.harvard.edu>
 Maintainer: Alexis Dinno <adinno@post.harvard.edu>
@@ -9,4 +9,4 @@ Description: paran is an implementation of Horn's technique for numerically and 
 License: GPL-2
 LazyLoad: true
 Encoding: latin1
-Packaged: Fri May  2 10:40:48 2008; hornik
+Packaged: Fri Sep 26 08:17:39 2008; alexis

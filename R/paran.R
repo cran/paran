@@ -1,5 +1,5 @@
 `paran` <-
-function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, cfa=FALSE, graph=FALSE, color=TRUE, col=c("black","red","blue"), lty=c(1,2,3), lwd=1, file="", width=640, height=640) {
+function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, cfa=FALSE, graph=FALSE, color=TRUE, col=c("black","red","blue"), lty=c(1,2,3), lwd=1, legend=TRUE, file="", width=640, height=640, grdevice="png") {
 
 library(MASS)
 
@@ -165,7 +165,12 @@ library(MASS)
 	Bias <- rep(0,P)
 	AdjEv <- rep(1,P)
 	for (p in 1:P) {
-		Bias[p] <- RndEv[p] - 1
+		if (cfa == TRUE) {
+			Bias[p] <- RndEv[p]
+			}
+		if (cfa == FALSE) {
+			Bias[p] <- RndEv[p] - 1
+			}
 		AdjEv[p] <- Ev[[p]] - Bias[p]
 		}
 
@@ -174,10 +179,19 @@ library(MASS)
 	y <- NA
 	for (x in 1:P) {
 		y <- x
-		if (AdjEv[x] <= 1) {
-			y <- x - 1
-			retained <- y
-			break
+		if (cfa == TRUE) {
+			if (AdjEv[x] <= 0) {
+				y <- x - 1
+				retained <- y
+				break
+				}
+			}
+		if (cfa == FALSE) {
+			if (AdjEv[x] <= 1) {
+				y <- x - 1
+				retained <- y
+				break
+				}
 			}
 		}
 
@@ -293,27 +307,35 @@ library(MASS)
 			}
 		if (cfa==FALSE) {
 			par(yaxs='i', xaxs='i', lab=c(P,ceiling(Ev[1]),2))
-			plot.default(c(1:P), RndEv, type='o', main='Parallel Analysis', xlab='Components', ylab='Eigenvalues', pch=20, col=RndEvCol, lty=RndEvLty, lwd=lwd, xlim=c(.5,P+.5), ylim=c(-.5,ceiling(Ev[[1]])))
+			plot.default(c(1:P), RndEv, type='o', main='Parallel Analysis', xlab='Components', ylab='Eigenvalues', pch=20, col=RndEvCol, lty=RndEvLty, lwd=lwd, xlim=c(.5,P+.5), ylim=c(min(AdjEv)-.5,ceiling(Ev[[1]])))
 			}
 		if (cfa==TRUE) {
 			par(xaxp=c(1,P,1))
-			plot.default(c(1:P), RndEv, type='o', main='Parallel Analysis', xlab='Factors', ylab='Eigenvalues', pch=20, col=RndEvCol, lty=RndEvLty, lwd=lwd, xlim=c(.5,P+.5), ylim=c(-.5,ceiling(Ev[[1]])))
+			plot.default(c(1:P), RndEv, type='o', main='Parallel Analysis', xlab='Factors', ylab='Eigenvalues', pch=20, col=RndEvCol, lty=RndEvLty, lwd=lwd, xlim=c(.5,P+.5), ylim=c(min(AdjEv)-.5,ceiling(Ev[[1]])))
 			}
-		abline(h=1, col='lightgrey',lwd=.5)
+		if (cfa == TRUE) {
+			abline(h=0, col='grey', lwd=.5)
+			}
+		if (cfa == FALSE) {
+			abline(h=1, col='grey', lwd=.5)
+			}
 		points(c(1:P),AdjEv, type='o', col=AdjEvCol, lty=AdjEvLty, pch=21, bg='white', lwd=lwd)
 		points(c(1:P),Ev, type='o', col=EvCol, lty=EvLty, pch=20, lwd=lwd)
 		points(c(1:retained), AdjEv[1:retained], type='p', pch=19, col=AdjEvCol, lty=AdjEvLty, lwd=lwd)
+
+# Add a legend to help with interpretation (thanks to Ulrich Keller)
+		if (legend==TRUE) {
+			legend("topright", legend=c("Adjusted Ev (retained)", "Adjusted Ev (unretained)", "Unadjusted Ev", "Random Ev"), col=c(AdjEvCol, AdjEvCol, EvCol, RndEvCol), pch = c(19, 21, 20, 20), lty = c(AdjEvLty, AdjEvLty, EvLty, RndEvLty))
+			}
+
+# Save the graph it if they have requested it be saved using the graphic 
+# device they have specified.
 		if (file != "" & typeof(file) == "character") {
-			dev.copy(png, height=height, width=width, file=file)
+			dev.copy(device=grdevice, height=height, width=width, file=file)
 			dev.off()
 			}
 		}
 
-	names(retained) <- c(paste("Retained ",Models,sep=""))
-	names(AdjEv) <- c("Adjusted Eigenvalues")
-	names(Ev) <- c("Unadjusted Eigenvalues")
-	names(RndEv) <- c("Random Eigenvalues")
-	names(Bias) <- c("Estimated Bias")
-	return(list(retained,AdjEv,Ev,RndEv,Bias,SimEvs))
+	invisible(list(Retained = retained, AdjEv = AdjEv, Ev = Ev, RndEv = RndEv, Bias = Bias, SimEvs = SimEvs))
 }
 
