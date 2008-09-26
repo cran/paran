@@ -1,5 +1,5 @@
 `paran` <-
-function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, cfa=FALSE, graph=FALSE, color=TRUE, col=c("black","red","blue"), lty=c(1,2,3), lwd=1, legend=TRUE, file="", width=640, height=640, grdevice="png") {
+function(x, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, cfa=FALSE, graph=FALSE, color=TRUE, col=c("black","red","blue"), lty=c(1,2,3), lwd=1, legend=TRUE, file="", width=640, height=640, grdevice="png", seed=0) {
 
 library(MASS)
 
@@ -63,7 +63,6 @@ library(MASS)
 			}
 		}
 
-	set.seed(1000*proc.time()[[1]])
 	for (k in 1:iterations) {
    
 # Yet _more_ letting the user know the program is working!
@@ -82,6 +81,9 @@ library(MASS)
 			
 # Create the random dataset.
 		# for normally distributed simulations
+		if (seed != 0) {
+			set.seed(seed*k)
+			}
 		Sim <- matrix(rnorm(N*P),N,P)
 
 # Run a principal components or factor analysis on the random dataset
@@ -102,9 +104,7 @@ library(MASS)
 # Save eigenvalues
 		SimEvs[k,] <- Evs
 
-# reseed and end the for k loop
-	Sys.sleep(.002)
-	set.seed(1000*proc.time()[[1]])
+# end the for k loop
 	}
 
 # display if neccesary
