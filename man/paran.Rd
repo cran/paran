@@ -13,7 +13,7 @@ paran(x, iterations=0, centile=0, quietly=FALSE,
 }
 \arguments{
  \item{x}{a numeric matrix or data frame for principal component analysis, or common factor analysis.}
- \item{iterations}{sets the number of iterations with a user specified whole number representing the number of random data sets to be produced in the analysis. The default, indicated by \code{iterations=0}, is 30\enc{*}P, where P is the number of variables or columns in \code{x}.}
+ \item{iterations}{sets the number of iterations with a user specified whole number representing the number of random data sets to be produced in the analysis. The default, indicated by \code{iterations=0}, is 30P, where P is the number of variables or columns in \code{x}.}
  \item{centile}{employs Monte Carlo estimates according to the user specified whole number between 1 and 99 indicating the centile used in estimating bias. The default is to use the mean. By selecting a conservative number, such as 95 or 99, and a large number of iterations, \code{paran} can be used to perform the modified version of parallel analysis suggested by Glorfeld (1995).}
  \item{quietly}{suppresses tabled output of the analysis, and only returns the vector of estimated biases.}
  \item{status}{indicates progress in the computation. Parallel analysis can take some time to complete given a large data set and/or a large number of iterations. The \code{cfa} option may noticably increase the computational requirements of \code{paran}.}
