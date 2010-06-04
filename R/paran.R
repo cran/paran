@@ -288,7 +288,12 @@ library(MASS)
 		}
 	if (quietly == FALSE) {
 		cat("--------------------------------------------------","\n")
-		cat("\nAdjusted eigenvalues > 1 indicate dimensions to retain.\n(",retained," ",models," retained)\n\n",sep="")
+		if (cfa == TRUE) {
+			cat("\nAdjusted eigenvalues > 0 indicate dimensions to retain.\n(",retained," ",models," retained)\n\n",sep="")
+			}
+		if (cfa == FALSE) {
+			cat("\nAdjusted eigenvalues > 1 indicate dimensions to retain.\n(",retained," ",models," retained)\n\n",sep="")
+			}
 		}
 
 # Graph it if needed
