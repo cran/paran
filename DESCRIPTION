@@ -1,6 +1,6 @@
 Package: paran
-Version: 1.4.3
-Date: 2010-06-04
+Version: 1.5.1
+Date: 2012-09-09
 Title: Horn's Test of Principal Components/Factors
 Author: Alexis Dinno <adinno@post.harvard.edu>
 Maintainer: Alexis Dinno <adinno@post.harvard.edu>
@@ -22,6 +22,6 @@ URL: http://doyenne.com/Software/files/PA_for_PCA_vs_FA.pdf
 License: GPL-2
 LazyLoad: true
 Encoding: latin1
-Packaged: 2010-06-04 23:48:23 UTC; Alexis
+Packaged: 2012-09-09 23:39:00 UTC; Alexis
 Repository: CRAN
-Date/Publication: 2010-06-05 05:58:11
+Date/Publication: 2012-09-10 06:41:56
