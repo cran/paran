@@ -1,8 +1,6 @@
 `paran` <-
 function(x=NA, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, cfa=FALSE, graph=FALSE, color=TRUE, col=c("black","red","blue"), lty=c(1,2,3), lwd=1, legend=TRUE, file="", width=640, height=640, grdevice="png", seed=0, mat=NA, n=NA) {
 
-library(MASS)
-
 # Confirm that x and mat were NOT both provided
   if ( !is.na(mat[[1]][1]) & !is.na(x[[1]][1]) ) {
     stop("\nYou must supply either x or mat but not both.")
@@ -200,6 +198,7 @@ library(MASS)
 
   Bias <- rep(0,P)
   AdjEv <- rep(1,P)
+  retained <- P
   for (p in 1:P) {
     if (cfa == TRUE) {
       Bias[p] <- RndEv[p]

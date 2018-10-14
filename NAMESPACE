@@ -5,6 +5,9 @@
 exportPattern(".")
 
 # Import all packages listed as Imports or Depends
-import(
-  MASS
-)
+import(MASS)
+
+# Define global functions
+importFrom("grDevices", "dev.copy", "dev.off")
+importFrom("graphics", "abline", "par", "plot.default", "points")
+importFrom("stats", "cor", "quantile", "rnorm")
