@@ -65,15 +65,15 @@ A big thank you to Ulrich Keller of the University of Luxembourg for his thought
 }
 \references{
 
-Dinno A. 2009. \href{http://alexisdinno.com/personal/files/Dinno2009b.pdf}{Exploring the Sensitivity of Horn's Parallel Analysis to the Distributional Form of Simulated Data.} \emph{Multivariate Behavioral Research}. 44(3): 362--388
+Dinno A. (2009) \href{http://alexisdinno.com/personal/files/Dinno2009b.pdf}{Exploring the Sensitivity of Horn's Parallel Analysis to the Distributional Form of Simulated Data.} \emph{Multivariate Behavioral Research}. \bold{44(3)}, 362--388.
 
-Glorfeld, L. W. 1995. An Improvement on Horn's Parallel Analysis Methodology for Selecting the Correct Number of Factors to Retain. \emph{Educational and Psychological Measurement}. 55(3): 377--393
+Glorfeld, L. W. (1995) An Improvement on Horn's Parallel Analysis Methodology for Selecting the Correct Number of Factors to Retain. \emph{Educational and Psychological Measurement}. \bold{55(3)}, 377--393. <\doi{10.1177/0013164495055003002}>.
 
-Hayton J. C., Allen D. G., and Scarpello V. 2004. Factor Retention Decisions in Exploratory Factor Analysis: A Tutorial on Parallel Analysis \emph{Organizational Research Methods}. 7(2): 191--205
+Hayton J. C., Allen D. G., and Scarpello V. (2004) Factor Retention Decisions in Exploratory Factor Analysis: A Tutorial on Parallel Analysis. \emph{Organizational Research Methods}. \bold{7(2)}, 191--205. <\doi{10.1177/1094428104263675}>.
 
-Horn J. L. 1965. A rationale and a test for the number of factors in factor analysis. \emph{Psychometrika}. 30: 179--185
+Horn J. L. (1965) A rationale and a test for the number of factors in factor analysis. \emph{Psychometrika}. \bold{30}, 179--185. <\doi{10.1007/bf02289447}>.
 
-Zwick W. R., Velicer WF. 1986. Comparison of Five Rules for Determining the Number of Components to Retain. \emph{Psychological Bulletin}. 99: 432--442
+Zwick W. R., Velicer WF. (1986) Comparison of Five Rules for Determining the Number of Components to Retain. \emph{Psychological Bulletin}. \bold{99}, 432--442. <\doi{10.1037/0033-2909.99.3.432}>.
 }
 \author{
 Alexis Dinno (alexis.dinno@pdx.edu)
