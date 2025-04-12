@@ -6,6 +6,11 @@ function(x=NA, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, c
     stop("\nYou must supply either x or mat but not both.")
     }
 
+# Set the RNG seed if necessary
+  if (seed != 0) {
+    set.seed(seed*k)
+    }
+
 # Set number of variables
   if ( is.na(mat[[1]][1]) & !is.na(x[[1]][1]) ) {
     P <- length(as.matrix(x)[1,])    
@@ -115,9 +120,6 @@ function(x=NA, iterations=0, centile=0, quietly=FALSE, status=TRUE, all=FALSE, c
       
 # Create the random dataset.
     # for normally distributed simulations
-    if (seed != 0) {
-      set.seed(seed*k)
-      }
     Sim <- matrix(rnorm(N*P),N,P)
 
 # Extract principal components or factors from the random dataset
